@@ -8,8 +8,20 @@ public class Student extends User {
     }
 
     @Override
+    public String getRole() {
+        return "Student";
+    }
+    @Override
     public void borrowBook(BookCopy copy) {
         synchronized (copy.getLock()) {
+//            if (copy.isTaken()) {
+//                System.out.println("Book already taken: " + copy.getTitle());
+//                return;
+//            }
+// BUG: Missing condition to check borrow limit
+//            borrowedBooks.add(copy);
+//            copy.setTaken(true);
+
             if (borrowedBooks.size() >= borrowLimit) {
                 System.out.println("Borrow limit reached for student: " + name);
                 return;

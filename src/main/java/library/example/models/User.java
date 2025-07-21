@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class User {
+public abstract class User {
     protected final int userId;
     protected String name;
     protected String email;
@@ -19,6 +19,7 @@ public class User {
         this.borrowedBooks = Collections.synchronizedList(new ArrayList<>());
     }
 
+    public abstract String getRole();
     public int getUserId() {
         return userId;
     }

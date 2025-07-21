@@ -1,5 +1,6 @@
 package library.example;
 
+import library.example.admin.AdminReportGenerator;
 import library.example.models.*;
 import library.example.services.LibraryService;
 
@@ -41,30 +42,67 @@ class ReturnBookTask implements Runnable {
     }
 }
 public class Main {
+    private static int idCounter = 1000;
+    private static int generateId() {
+        return idCounter++;
+    }
+
     public static void main(String[] args) {
         LibraryService library = new LibraryService();
         Scanner sc = new Scanner(System.in);
+
         while (true) {
             System.out.println("\nWelcome to the Library System");
-            System.out.print("Are you a Librarian or Student? (L/S), or Q to Quit: ");
+            System.out.print("Choose an option: [L]ibrarian Login, [S]tudent Login, [U] View Users, [A] Add User, [Q] Quit: ");
             String role = sc.nextLine().trim().toUpperCase();
 
-            if (role.equals("L")) {
-                Librarian librarian = new Librarian(1, "Librarian1", "librarian@example.com", "9999999999");
-                showLibrarianMenu(librarian, library, sc); // returns to here after logout
-            } else if (role.equals("S")) {
-                Student student = new Student(2, "Student1", "student@example.com", "8888888888");
-                showStudentMenu(student, library, sc); // returns to here after logout
-            } else if (role.equals("Q")) {
-                System.out.println("Exiting the Library System. Goodbye!");
-                break; // ends the while loop and exits
-            } else {
-                System.out.println("Invalid input. Please enter 'L' for Librarian, 'S' for Student, or 'Q' to Quit.");
+            switch (role) {
+                case "L" -> {
+                    System.out.print("Enter Librarian name: ");
+                    String name = sc.nextLine();
+                    Librarian librarian = new Librarian(generateId(), name, name.toLowerCase() + "@library.com", "9999999999");
+                    library.addUser(librarian);
+                    showLibrarianMenu(librarian, library, sc);
+                }
+                case "S" -> {
+                    System.out.print("Enter Student name: ");
+                    String name = sc.nextLine();
+                    Student student = new Student(generateId(), name, name.toLowerCase() + "@student.com", "8888888888");
+                    library.addUser(student);
+                    showStudentMenu(student, library, sc);
+                }
+                case "U" -> {
+                    System.out.println("All Users:");
+                    library.getAllUsers().forEach(user ->
+                            System.out.println(user.getRole() + ": " + user.getName()));
+                }
+                case "A" -> {
+                    System.out.print("Add (L)ibrarian or (S)tudent? ");
+                    String type = sc.nextLine().trim().toUpperCase();
+                    System.out.print("Enter name: ");
+                    String name = sc.nextLine();
+                    int id = generateId();
+                    if (type.equals("L")) {
+                        Librarian librarian = new Librarian(id, name, name.toLowerCase() + "@library.com", "9999999999");
+                        library.addUser(librarian);
+                        System.out.println("Librarian added: " + name);
+                    } else if (type.equals("S")) {
+                        Student student = new Student(id, name, name.toLowerCase() + "@student.com", "8888888888");
+                        library.addUser(student);
+                        System.out.println("Student added: " + name);
+                    } else {
+                        System.out.println("Invalid user type.");
+                    }
+                }
+                case "Q" -> {
+                    System.out.println("Exiting the Library System. Goodbye!");
+                    return;
+                }
+                default -> System.out.println("Invalid input.");
             }
         }
-
-        sc.close();
     }
+
 
     private static void showLibrarianMenu(Librarian librarian, LibraryService library, Scanner sc) {
         while (true) {
@@ -79,6 +117,7 @@ public class Main {
             System.out.println("8. Sort Books by Author");
             System.out.println("9. Search Books by Title");
             System.out.println("10. Search Books by Author");
+            System.out.println("11. Generate report");
             System.out.println("0. Logout");
             System.out.print("Enter choice: ");
             int choice = Integer.parseInt(sc.nextLine());
@@ -184,10 +223,15 @@ public class Main {
                         results.forEach(System.out::println);
                     }
                 }
+                case 11 -> {
+                    List<User> allUsers = library.getAllUsers();
+                    AdminReportGenerator.generateReport("Library Users Report", allUsers);
+                }
                 case 0 -> {
                     System.out.println("Logged out.");
                     return;
                 }
+
                 default -> System.out.println("Invalid choice.");
             }
         }
@@ -204,6 +248,8 @@ public class Main {
             System.out.println("6. View Available EBooks");
             System.out.println("7. Search Books by Title");
             System.out.println("8. Search Books by Author");
+            System.out.println("9. Generate report");
+            System.out.println("10. Simulate borrowing/returning of books");
             System.out.println("0. Logout");
             System.out.print("Enter choice: ");
             int choice = Integer.parseInt(sc.nextLine());
@@ -214,10 +260,8 @@ public class Main {
                     System.out.print("Enter title of book to borrow: ");
                     String title = sc.nextLine();
                     BookCopy copy = library.getAvailableCopyByTitle(title).orElse(null);
-                    //Borrowing logic using threads
                     if (copy != null) {
-                        Thread borrowThread = new Thread(new BorrowBookTask(student, copy));
-                        borrowThread.start();
+                        student.borrowBook(copy); // No thread
                     } else {
                         System.out.println("No available copy.");
                     }
@@ -227,8 +271,7 @@ public class Main {
                     int copyId = Integer.parseInt(sc.nextLine());
                     BookCopy toReturn = library.getCopyById(copyId);
                     if (toReturn != null) {
-                        Thread returnThread = new Thread(new ReturnBookTask(student, toReturn));
-                        returnThread.start();
+                        student.returnBook(toReturn); // No thread
                     } else {
                         System.out.println("Invalid copy ID.");
                     }
@@ -268,6 +311,76 @@ public class Main {
                         results.forEach(System.out::println);
                     }
                 }
+                case 9 -> {
+                    System.out.println("Generating report for all students:");
+                    List<Student> students = library.getAllUsers().stream()
+                            .filter(u -> u instanceof Student)
+                            .map(u -> (Student) u)
+                            .toList();
+                    AdminReportGenerator.generateReport("Student Report", students);
+                }
+                case 10 -> {
+                    System.out.println("\nSimulating borrowing/returning with multiple students...");
+
+                    List<BookCopy> available = library.getAllAvailableCopies();
+                    if (available.size() < 3) {
+                        System.out.println("At least 3 available book copies are required for simulation.");
+                        break;
+                    }
+
+                    // Create dummy students
+                    Student s1 = new Student(101, "Alice", "alice@example.com", "9991110001");
+                    Student s2 = new Student(102, "Bob", "bob@example.com", "9991110002");
+                    Student s3 = new Student(103, "Charlie", "charlie@example.com", "9991110003");
+
+                    BookCopy c1 = available.get(0);
+                    BookCopy c2 = available.get(1);
+                    BookCopy c3 = available.get(2);
+
+                    // Threads for borrowing
+                    Thread t1 = new Thread(new BorrowBookTask(s1, c1));
+                    Thread t2 = new Thread(new BorrowBookTask(s2, c2));
+                    Thread t3 = new Thread(new BorrowBookTask(s3, c3));
+
+                    // Threads for returning after short delay
+                    Thread r1 = new Thread(() -> {
+                        try {
+                            Thread.sleep(2000);
+                            new ReturnBookTask(s1, c1).run();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    });
+
+                    Thread r2 = new Thread(() -> {
+                        try {
+                            Thread.sleep(2500);
+                            new ReturnBookTask(s2, c2).run();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    });
+
+                    Thread r3 = new Thread(() -> {
+                        try {
+                            Thread.sleep(3000);
+                            new ReturnBookTask(s3, c3).run();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    });
+
+                    // Start borrow threads
+                    t1.start();
+                    t2.start();
+                    t3.start();
+
+                    // Start return threads
+                    r1.start();
+                    r2.start();
+                    r3.start();
+                }
+
                 case 0 -> {
                     System.out.println("Logged out.");
                     return;

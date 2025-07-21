@@ -8,6 +8,10 @@ public class Librarian extends User {
         super(userId, name, email, phone);
     }
 
+    @Override
+    public String getRole() {
+        return "Librarian";
+    }
     public void addNewBook(LibraryService library, Book book) {
         library.addBook(book);
         System.out.println("Librarian added new book: " + book.getTitle());
