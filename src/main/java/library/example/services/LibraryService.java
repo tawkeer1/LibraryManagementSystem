@@ -138,7 +138,7 @@ public class LibraryService {
         ebookManager.getAll().forEach(System.out::println);
     }
 
-    // 🔄 Backup triggers (can be used manually or by a background thread)
+    // Backup triggers (can be used manually or by a background thread)
     public void backupToDisk() {
         BackupService.saveBooks(getAllBooks());
         BackupService.saveUsers(getAllUsers());

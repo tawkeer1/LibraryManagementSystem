@@ -49,11 +49,11 @@ public class Main {
 
     public static void main(String[] args) {
         LibraryService library = new LibraryService();
-        // Start background auto-backup every minute
+        // Start background auto-backup every 5 minutes
         new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep( 60000);
+                    Thread.sleep( 300000);
                     library.backupToDisk();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
