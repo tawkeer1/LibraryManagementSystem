@@ -68,7 +68,7 @@ public class Main {
 
         while (true) {
             System.out.println("\nWelcome to the Library System");
-            System.out.print("Choose an option: [L]ibrarian Login, [S]tudent Login, [U] View Users, [A] Add User, [Q] Quit: ");
+            System.out.print("Choose an option: [L]ibrarian Login, [S]tudent Login, [U] View Users, [A] Add User, [D] Delete User, [Q] Quit: ");
             String role = sc.nextLine().trim().toUpperCase();
 
             switch (role) {
@@ -83,7 +83,9 @@ public class Main {
                     } else {
                         System.out.print("Enter name: ");
                         String name = sc.nextLine();
-                        librarian = new Librarian(generateId(), name, email, "9999999999");
+                        System.out.print("Enter phone number: ");
+                        String phone = sc.nextLine();
+                        librarian = new Librarian(generateId(), name, email, phone);
                         library.addUser(librarian);
                         System.out.println("New librarian added.");
                     }
@@ -101,7 +103,9 @@ public class Main {
                     } else {
                         System.out.print("Enter name: ");
                         String name = sc.nextLine();
-                        student = new Student(generateId(), name, email, "8888888888");
+                        System.out.print("Enter phone number: ");
+                        String phone = sc.nextLine();
+                        student = new Student(generateId(), name, email, phone);
                         library.addUser(student);
                         System.out.println("New student added.");
                     }
@@ -121,6 +125,8 @@ public class Main {
                     String name = sc.nextLine();
                     System.out.print("Enter email: ");
                     String email = sc.nextLine().trim().toLowerCase();
+                    System.out.print("Enter phone: ");
+                    String phone = sc.nextLine().trim().toLowerCase();
 
                     if (library.findUserByEmail(email).isPresent()) {
                         System.out.println("User already exists with this email.");
@@ -129,7 +135,7 @@ public class Main {
 
                     int id = generateId();
                     if (type.equals("L")) {
-                        Librarian librarian = new Librarian(id, name, email, "9999999999");
+                        Librarian librarian = new Librarian(id, name, email, phone);
                         library.addUser(librarian);
                         System.out.println("Librarian added: " + name);
                     } else if (type.equals("S")) {
@@ -141,8 +147,19 @@ public class Main {
                     }
                 }
 
+                case "D" -> {
+                    System.out.print("Enter user email to delete: ");
+                    String email = sc.nextLine().trim().toLowerCase();
+                    boolean deleted = library.deleteUserByEmail(email);
+                    if (deleted) {
+                        System.out.println("User deleted successfully.");
+                    } else {
+                        System.out.println("No user found with that email.");
+                    }
+                }
+
                 case "Q" -> {
-                    System.out.println("Exiting the Library System. Goodbye!");
+                    System.out.println("Exiting the Library System...");
                     return;
                 }
 

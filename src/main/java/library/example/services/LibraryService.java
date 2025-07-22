@@ -62,6 +62,13 @@ public class LibraryService {
         }
     }
 
+    public boolean deleteUserByEmail(String email) {
+        synchronized (users) {
+            return users.removeIf(user -> user.getEmail().equalsIgnoreCase(email));
+        }
+    }
+
+
 
     public void addBookCopy(int bookIndex, BookCopy copy) {
         List<Book> books = bookManager.getAll();
