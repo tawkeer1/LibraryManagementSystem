@@ -16,7 +16,7 @@ public class Student extends User implements Serializable {
     }
     @Override
     public void borrowBook(BookCopy copy) {
-        synchronized (copy.getLock()) {
+        synchronized (copy) {
 //            if (copy.isTaken()) {
 //                System.out.println("Book already taken: " + copy.getTitle());
 //                return;
@@ -25,18 +25,19 @@ public class Student extends User implements Serializable {
 //            borrowedBooks.add(copy);
 //            copy.setTaken(true);
 
+            if (copy.isTaken()) {
+                System.out.println("Book already taken: " + copy.getTitle());
+                return;
+            }
+
             if (borrowedBooks.size() >= borrowLimit) {
                 System.out.println("Borrow limit reached for student: " + name);
                 return;
             }
 
-            if (!copy.isTaken()) {
-                borrowedBooks.add(copy);
-                copy.setTaken(true);
-                System.out.println(name + " borrowed: " + copy.getTitle());
-            } else {
-                System.out.println("Book already taken: " + copy.getTitle());
-            }
+            borrowedBooks.add(copy);
+            copy.setTaken(true);
+            System.out.println(name + " borrowed: " + copy.getTitle());
         }
     }
 

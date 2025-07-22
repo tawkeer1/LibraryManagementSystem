@@ -2,10 +2,10 @@ package library.example.models;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Objects;
 
 public class BookCopy implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final Object lock = new Object();
     private final int copyId;
     private String title;
     private String authorName;
@@ -20,10 +20,6 @@ public class BookCopy implements Serializable {
         this.genre = genre;
         this.pages = pages;
         this.taken = taken;
-    }
-
-    public Object getLock() {
-        return lock;
     }
 
     public int getCopyId() {
@@ -85,4 +81,18 @@ public class BookCopy implements Serializable {
                 ", taken=" + taken +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        BookCopy that = (BookCopy) obj;
+        return this.copyId == that.copyId; // or any unique identifier
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(copyId); // or same field used in equals
+    }
+
 }

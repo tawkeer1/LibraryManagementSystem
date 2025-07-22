@@ -60,7 +60,7 @@ public abstract class User implements Serializable {
             return;
         }
 
-        synchronized (copy.getLock()) {
+        synchronized (copy) {
             if (!copy.isTaken()) {
                 borrowedBooks.add(copy);
                 copy.setTaken(true);
@@ -77,7 +77,7 @@ public abstract class User implements Serializable {
             return;
         }
 
-        synchronized (copy.getLock()) {
+        synchronized (copy) {
             if (borrowedBooks.remove(copy)) {
                 copy.setTaken(false);
                 System.out.println(name + " returned: " + copy.getTitle());

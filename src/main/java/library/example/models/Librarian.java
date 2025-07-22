@@ -21,7 +21,7 @@ public class Librarian extends User implements Serializable {
 
     public void addBookCopyToBook(LibraryService library, int bookIndex, BookCopy copy) {
         library.addBookCopy(bookIndex, copy);
-        System.out.println("➕ Added copy ID: " + copy.getCopyId() + " to book at index " + bookIndex);
+        System.out.println("Added copy ID: " + copy.getCopyId() + " to book at index " + bookIndex);
     }
 
     public void removeEBook(LibraryService library, String title) {
@@ -39,7 +39,7 @@ public class Librarian extends User implements Serializable {
 
 
     public void removeBookCopy(Book book, BookCopy copy) {
-        synchronized (book.getLock()) {
+        synchronized (book) {
             if (copy.isTaken()) {
                 System.out.println("Cannot remove borrowed copy: " + copy.getTitle());
             } else if (book.getCopies().remove(copy)) {
@@ -57,7 +57,7 @@ public class Librarian extends User implements Serializable {
             return;
         }
 
-        synchronized (copy.getLock()) {
+        synchronized (copy) {
             if (!copy.isTaken()) {
                 borrowedBooks.add(copy);
                 copy.setTaken(true);
@@ -75,7 +75,7 @@ public class Librarian extends User implements Serializable {
             return;
         }
 
-        synchronized (copy.getLock()) {
+        synchronized (copy) {
             if (borrowedBooks.remove(copy)) {
                 copy.setTaken(false);
                 System.out.println("Librarian " + name + " returned: " + copy.getTitle());

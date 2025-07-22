@@ -5,7 +5,6 @@ import java.util.List;
 
 public class Book implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final transient Object lock = new Object();
     protected String title;
     private String authorName;
     private int pages;
@@ -19,10 +18,6 @@ public class Book implements Serializable {
         this.genre = genre;
         this.pages = pages;
         this.copies = new ArrayList<>();
-    }
-
-    public Object getLock() {
-        return lock;
     }
 
     public void addCopy(BookCopy copy) {
