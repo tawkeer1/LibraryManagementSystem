@@ -55,7 +55,7 @@ public class Main {
         new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(300000);
+                    Thread.sleep(30000);
                     library.backupToDisk();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -364,7 +364,7 @@ public class Main {
                     EBook ebook = library.getEBookByTitle(title).orElse(null);
                     student.releaseEBook(ebook);
                 }
-                case 5 -> library.getAllAvailableCopies().forEach(System.out::println);
+                case 5 -> library.printAllBooks();
                 case 6 -> library.getAllAvailableEBooks().forEach(System.out::println);
                 case 7 -> {
                     System.out.print("Enter title to search: ");

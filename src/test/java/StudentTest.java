@@ -22,8 +22,8 @@ public class StudentTest {
 
     @Test
     void testBorrowBookWithinLimit() {
-        BookCopy copy = book.getCopies().get(0); // Don't mark it taken manually
-        student.borrowBook(copy); // Now borrowing should succeed
+        BookCopy copy = book.getCopies().get(0);
+        student.borrowBook(copy);
         assertEquals(1, student.getBorrowedBooks().size());
         assertTrue(copy.isTaken());
     }
@@ -44,8 +44,8 @@ public class StudentTest {
 
     @Test
     void testReturnBookSuccessfully() {
-        BookCopy copy = book.getCopies().get(0); // Get the copy without marking it taken
-        student.borrowBook(copy); // This now works correctly
+        BookCopy copy = book.getCopies().get(0);
+        student.borrowBook(copy);
         assertTrue(copy.isTaken());
 
         student.returnBook(copy);

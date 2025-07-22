@@ -5,13 +5,13 @@ import java.util.List;
 
 public class Book implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final Object lock = new Object();
+    private final transient Object lock = new Object();
     protected String title;
     private String authorName;
     private int pages;
     private String genre;
     //list of copies of this book. Have same name but diff. ids
-    private List<BookCopy> copies;
+    private List<BookCopy> copies ;
 
     public Book(String title, String authorName, String genre, int pages) {
         this.title = title;
