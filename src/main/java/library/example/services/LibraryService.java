@@ -8,10 +8,33 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class LibraryService {
-    private final List<User> users = Collections.synchronizedList(new ArrayList<>());
-    private final GenericAssetManager<Book> bookManager = new GenericAssetManager<>();
-    private final GenericAssetManager<EBook> ebookManager = new GenericAssetManager<>();
-    private final Map<Integer, BookCopy> copyIdMap = new ConcurrentHashMap<>();
+    private final List<User> users;
+    private final GenericAssetManager<Book> bookManager;
+    private final GenericAssetManager<EBook> ebookManager;
+    private final Map<Integer, BookCopy> copyIdMap;
+
+    public LibraryService() {
+        // Load users from backup or start fresh
+        this.users = Collections.synchronizedList(
+                Optional.ofNullable(BackupService.loadUsers()).orElse(new ArrayList<>())
+        );
+
+        // Load books (physical) from backup or empty list
+        List<Book> loadedBooks = Optional.ofNullable(BackupService.loadBooks()).orElse(new ArrayList<>());
+        this.bookManager = new GenericAssetManager<>();
+        loadedBooks.forEach(bookManager::add);
+
+        // Create copy map from loaded books
+        this.copyIdMap = new ConcurrentHashMap<>();
+        for (Book book : loadedBooks) {
+            for (BookCopy copy : book.getCopies()) {
+                copyIdMap.put(copy.getCopyId(), copy);
+            }
+        }
+
+        // EBooks are not currently backed up
+        this.ebookManager = new GenericAssetManager<>();
+    }
 
     // User management
     public void addUser(User user) {
@@ -113,5 +136,39 @@ public class LibraryService {
 
     public void printAllEBooks() {
         ebookManager.getAll().forEach(System.out::println);
+    }
+
+    // 🔄 Backup triggers (can be used manually or by a background thread)
+    public void backupToDisk() {
+        BackupService.saveBooks(getAllBooks());
+        BackupService.saveUsers(getAllUsers());
+        System.out.println("[Backup] Data saved successfully.");
+    }
+
+    public void reloadUsersFromDisk() {
+        List<User> loaded = BackupService.loadUsers();
+        if (loaded != null) {
+            users.clear();
+            users.addAll(loaded);
+            System.out.println("Users loaded successfully.");
+        } else {
+            System.out.println("No user data found or failed to load.");
+        }
+    }
+
+    public void reloadBooksFromDisk() {
+        List<Book> loadedBooks = BackupService.loadBooks();
+        if (loadedBooks != null) {
+            bookManager.clear();
+            for (Book book : loadedBooks) {
+                bookManager.add(book);
+                for (BookCopy copy : book.getCopies()) {
+                    copyIdMap.put(copy.getCopyId(), copy);
+                }
+            }
+            System.out.println("Books loaded successfully.");
+        } else {
+            System.out.println("No book data found or failed to load.");
+        }
     }
 }

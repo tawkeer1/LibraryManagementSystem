@@ -1,6 +1,10 @@
 package library.example.models;
 
-public class BookCopy {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class BookCopy implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final Object lock = new Object();
     private final int copyId;
     private String title;

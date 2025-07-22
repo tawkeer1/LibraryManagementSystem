@@ -49,6 +49,19 @@ public class Main {
 
     public static void main(String[] args) {
         LibraryService library = new LibraryService();
+        // Start background auto-backup every minute
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep( 60000);
+                    library.backupToDisk();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }).start();
+
         Scanner sc = new Scanner(System.in);
 
         while (true) {
@@ -118,6 +131,9 @@ public class Main {
             System.out.println("9. Search Books by Title");
             System.out.println("10. Search Books by Author");
             System.out.println("11. Generate report");
+            System.out.println("12. backup to disk");
+            System.out.println("13. Load users");
+            System.out.println("14. Load books");
             System.out.println("0. Logout");
             System.out.print("Enter choice: ");
             int choice = Integer.parseInt(sc.nextLine());
@@ -227,6 +243,12 @@ public class Main {
                     List<User> allUsers = library.getAllUsers();
                     AdminReportGenerator.generateReport("Library Users Report", allUsers);
                 }
+
+                case 12 -> library.backupToDisk();
+
+                case 13 -> library.reloadUsersFromDisk();
+                case 14 -> library.reloadBooksFromDisk();
+
                 case 0 -> {
                     System.out.println("Logged out.");
                     return;

@@ -1,0 +1,11 @@
+C:\Users\TawkeerShaban\IdeaProjects\LibraryManagementSystem\src\main\java\library\example\Main.java
+C:\Users\TawkeerShaban\IdeaProjects\LibraryManagementSystem\src\main\java\library\example\admin\AdminReportGenerator.java
+C:\Users\TawkeerShaban\IdeaProjects\LibraryManagementSystem\src\main\java\library\example\models\Book.java
+C:\Users\TawkeerShaban\IdeaProjects\LibraryManagementSystem\src\main\java\library\example\models\BookCopy.java
+C:\Users\TawkeerShaban\IdeaProjects\LibraryManagementSystem\src\main\java\library\example\models\EBook.java
+C:\Users\TawkeerShaban\IdeaProjects\LibraryManagementSystem\src\main\java\library\example\models\Librarian.java
+C:\Users\TawkeerShaban\IdeaProjects\LibraryManagementSystem\src\main\java\library\example\models\Student.java
+C:\Users\TawkeerShaban\IdeaProjects\LibraryManagementSystem\src\main\java\library\example\models\User.java
+C:\Users\TawkeerShaban\IdeaProjects\LibraryManagementSystem\src\main\java\library\example\services\LibraryService.java
+C:\Users\TawkeerShaban\IdeaProjects\LibraryManagementSystem\src\main\java\library\example\tasks\BorrowBookTask.java
+C:\Users\TawkeerShaban\IdeaProjects\LibraryManagementSystem\src\main\java\library\example\utils\GenericAssetManager.java

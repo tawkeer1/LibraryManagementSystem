@@ -2,8 +2,10 @@ package library.example.models;
 
 import library.example.services.LibraryService;
 
-public class Librarian extends User {
+import java.io.Serializable;
 
+public class Librarian extends User implements Serializable {
+    private static final long serialVersionUID = 1L;
     public Librarian(int userId, String name, String email, String phone) {
         super(userId, name, email, phone);
     }

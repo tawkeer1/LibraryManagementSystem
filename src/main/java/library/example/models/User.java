@@ -1,10 +1,12 @@
 package library.example.models;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class User {
+public abstract class User implements Serializable {
+    private static final long serialVersionUID = 1L;
     protected final int userId;
     protected String name;
     protected String email;

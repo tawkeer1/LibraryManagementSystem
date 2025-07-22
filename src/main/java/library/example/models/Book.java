@@ -1,8 +1,10 @@
 package library.example.models;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Book {
+public class Book implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final Object lock = new Object();
     protected String title;
     private String authorName;

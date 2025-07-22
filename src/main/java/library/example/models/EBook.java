@@ -1,6 +1,9 @@
 package library.example.models;
 
-public class EBook extends Book {
+import java.io.Serializable;
+
+public class EBook extends Book implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final String format;
     private final String downloadLink;
     private final boolean isDRMProtected;

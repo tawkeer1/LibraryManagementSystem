@@ -1,0 +1,6 @@
+dir /S /B src\main\java\*.java > sources.txt
+javac -d out @sources.txt
+java -cp out library.example.Main
+inside manifest.txt: Main-Class: library.example.Main
+jar cfm LibraryApp.jar manifest.txt -C out .
+java -jar LibraryApp.jar

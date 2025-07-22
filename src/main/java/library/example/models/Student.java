@@ -1,6 +1,9 @@
 package library.example.models;
 
-public class Student extends User {
+import java.io.Serializable;
+
+public class Student extends User implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final int borrowLimit = 3;
 
     public Student(int userId, String name, String email, String phone) {

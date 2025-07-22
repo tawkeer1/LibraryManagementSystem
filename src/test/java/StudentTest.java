@@ -56,7 +56,7 @@ public class StudentTest {
     @Test
     void testReturnBookNotBorrowed() {
         BookCopy fakeCopy = new BookCopy(999, "Ghost Book", "Ghost", "Mystery", 100, false);
-        student.returnBook(fakeCopy); // Should be no-op
+        student.returnBook(fakeCopy);
         assertFalse(fakeCopy.isTaken());
         assertEquals(0, student.getBorrowedBooks().size());
     }
