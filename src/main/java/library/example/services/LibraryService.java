@@ -54,6 +54,15 @@ public class LibraryService {
         return bookManager.getAll();
     }
 
+    public Optional<User> findUserByEmail(String email) {
+        synchronized (users) {
+            return users.stream()
+                    .filter(user -> user.getEmail().equalsIgnoreCase(email))
+                    .findFirst();
+        }
+    }
+
+
     public void addBookCopy(int bookIndex, BookCopy copy) {
         List<Book> books = bookManager.getAll();
         if (bookIndex >= 0 && bookIndex < books.size()) {

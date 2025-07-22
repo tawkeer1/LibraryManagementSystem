@@ -5,6 +5,7 @@ import library.example.models.*;
 import library.example.services.LibraryService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 class BorrowBookTask implements Runnable {
@@ -49,11 +50,12 @@ public class Main {
 
     public static void main(String[] args) {
         LibraryService library = new LibraryService();
+
         // Start background auto-backup every 5 minutes
         new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep( 300000);
+                    Thread.sleep(300000);
                     library.backupToDisk();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -71,50 +73,84 @@ public class Main {
 
             switch (role) {
                 case "L" -> {
-                    System.out.print("Enter Librarian name: ");
-                    String name = sc.nextLine();
-                    Librarian librarian = new Librarian(generateId(), name, name.toLowerCase() + "@library.com", "9999999999");
-                    library.addUser(librarian);
+                    System.out.print("Enter Librarian email: ");
+                    String email = sc.nextLine().trim().toLowerCase();
+                    Optional<User> userOpt = library.findUserByEmail(email);
+
+                    Librarian librarian;
+                    if (userOpt.isPresent() && userOpt.get() instanceof Librarian) {
+                        librarian = (Librarian) userOpt.get();
+                    } else {
+                        System.out.print("Enter name: ");
+                        String name = sc.nextLine();
+                        librarian = new Librarian(generateId(), name, email, "9999999999");
+                        library.addUser(librarian);
+                        System.out.println("New librarian added.");
+                    }
                     showLibrarianMenu(librarian, library, sc);
                 }
+
                 case "S" -> {
-                    System.out.print("Enter Student name: ");
-                    String name = sc.nextLine();
-                    Student student = new Student(generateId(), name, name.toLowerCase() + "@student.com", "8888888888");
-                    library.addUser(student);
+                    System.out.print("Enter Student email: ");
+                    String email = sc.nextLine().trim().toLowerCase();
+                    Optional<User> userOpt = library.findUserByEmail(email);
+
+                    Student student;
+                    if (userOpt.isPresent() && userOpt.get() instanceof Student) {
+                        student = (Student) userOpt.get();
+                    } else {
+                        System.out.print("Enter name: ");
+                        String name = sc.nextLine();
+                        student = new Student(generateId(), name, email, "8888888888");
+                        library.addUser(student);
+                        System.out.println("New student added.");
+                    }
                     showStudentMenu(student, library, sc);
                 }
+
                 case "U" -> {
                     System.out.println("All Users:");
                     library.getAllUsers().forEach(user ->
-                            System.out.println(user.getRole() + ": " + user.getName()));
+                            System.out.println(user.getRole() + ": " + user.getName() + " (" + user.getEmail() + ")"));
                 }
+
                 case "A" -> {
                     System.out.print("Add (L)ibrarian or (S)tudent? ");
                     String type = sc.nextLine().trim().toUpperCase();
                     System.out.print("Enter name: ");
                     String name = sc.nextLine();
+                    System.out.print("Enter email: ");
+                    String email = sc.nextLine().trim().toLowerCase();
+
+                    if (library.findUserByEmail(email).isPresent()) {
+                        System.out.println("User already exists with this email.");
+                        break;
+                    }
+
                     int id = generateId();
                     if (type.equals("L")) {
-                        Librarian librarian = new Librarian(id, name, name.toLowerCase() + "@library.com", "9999999999");
+                        Librarian librarian = new Librarian(id, name, email, "9999999999");
                         library.addUser(librarian);
                         System.out.println("Librarian added: " + name);
                     } else if (type.equals("S")) {
-                        Student student = new Student(id, name, name.toLowerCase() + "@student.com", "8888888888");
+                        Student student = new Student(id, name, email, "8888888888");
                         library.addUser(student);
                         System.out.println("Student added: " + name);
                     } else {
                         System.out.println("Invalid user type.");
                     }
                 }
+
                 case "Q" -> {
                     System.out.println("Exiting the Library System. Goodbye!");
                     return;
                 }
+
                 default -> System.out.println("Invalid input.");
             }
         }
     }
+
 
 
     private static void showLibrarianMenu(Librarian librarian, LibraryService library, Scanner sc) {
