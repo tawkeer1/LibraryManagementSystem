@@ -87,7 +87,6 @@ public abstract class User implements Serializable {
         }
     }
 
-    // User.java — Add these methods below borrowBook() and returnBook()
 
     public void accessEBook(EBook ebook) {
         if (ebook == null) {

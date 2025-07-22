@@ -55,7 +55,7 @@ public class Main {
         new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(30000);
+                    Thread.sleep(600000);
                     library.backupToDisk();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -395,7 +395,7 @@ public class Main {
                     AdminReportGenerator.generateReport("Student Report", students);
                 }
                 case 10 -> {
-                    System.out.println("\nSimulating borrowing/returning with multiple students...");
+                    System.out.println("\n=== Simulating borrowing/returning with multiple students... ===");
 
                     List<BookCopy> available = library.getAllAvailableCopies();
                     if (available.size() < 3) {
@@ -403,58 +403,83 @@ public class Main {
                         break;
                     }
 
-                    // Create dummy students
+                    // Create students
                     Student s1 = new Student(101, "Alice", "alice@example.com", "9991110001");
                     Student s2 = new Student(102, "Bob", "bob@example.com", "9991110002");
                     Student s3 = new Student(103, "Charlie", "charlie@example.com", "9991110003");
+
+                    library.addUser(s1);
+                    library.addUser(s2);
+                    library.addUser(s3);
 
                     BookCopy c1 = available.get(0);
                     BookCopy c2 = available.get(1);
                     BookCopy c3 = available.get(2);
 
-                    // Threads for borrowing
-                    Thread t1 = new Thread(new BorrowBookTask(s1, c1));
-                    Thread t2 = new Thread(new BorrowBookTask(s2, c2));
-                    Thread t3 = new Thread(new BorrowBookTask(s3, c3));
+                    // Borrow threads
+                    Thread t1 = new Thread(() -> {
+                        s1.borrowBook(c1);
+                        System.out.println(s1.getName() + " borrowed: " + c1.getTitle());
+                    });
 
-                    // Threads for returning after short delay
+                    Thread t2 = new Thread(() -> {
+                        s2.borrowBook(c2);
+                        System.out.println(s2.getName() + " borrowed: " + c2.getTitle());
+                    });
+
+                    Thread t3 = new Thread(() -> {
+                        s3.borrowBook(c3);
+                        System.out.println(s3.getName() + " borrowed: " + c3.getTitle());
+                    });
+
+                    // Return threads (delayed)
                     Thread r1 = new Thread(() -> {
                         try {
                             Thread.sleep(2000);
-                            new ReturnBookTask(s1, c1).run();
+                            s1.returnBook(c1);
+                            System.out.println(s1.getName() + " returned: " + c1.getTitle());
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            Thread.currentThread().interrupt();
                         }
                     });
 
                     Thread r2 = new Thread(() -> {
                         try {
                             Thread.sleep(2500);
-                            new ReturnBookTask(s2, c2).run();
+                            s2.returnBook(c2);
+                            System.out.println(s2.getName() + " returned: " + c2.getTitle());
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            Thread.currentThread().interrupt();
                         }
                     });
 
                     Thread r3 = new Thread(() -> {
                         try {
                             Thread.sleep(3000);
-                            new ReturnBookTask(s3, c3).run();
+                            s3.returnBook(c3);
+                            System.out.println(s3.getName() + " returned: " + c3.getTitle());
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            Thread.currentThread().interrupt();
                         }
                     });
 
-                    // Start borrow threads
-                    t1.start();
-                    t2.start();
-                    t3.start();
+                    t1.start(); t2.start(); t3.start();
+                    r1.start(); r2.start(); r3.start();
 
-                    // Start return threads
-                    r1.start();
-                    r2.start();
-                    r3.start();
+                    // Wait for all threads to complete
+                    try {
+                        t1.join(); t2.join(); t3.join();
+                        r1.join(); r2.join(); r3.join();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+
+                    System.out.println("\n=== Simulation complete ===\n");
                 }
+
+
+
+
 
                 case 0 -> {
                     System.out.println("Logged out.");

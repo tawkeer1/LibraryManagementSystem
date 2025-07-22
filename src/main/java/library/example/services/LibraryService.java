@@ -31,8 +31,6 @@ public class LibraryService {
                 copyIdMap.put(copy.getCopyId(), copy);
             }
         }
-
-        // EBooks are not currently backed up
         this.ebookManager = new GenericAssetManager<>();
     }
 
