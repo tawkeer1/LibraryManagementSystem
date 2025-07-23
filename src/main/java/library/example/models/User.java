@@ -10,13 +10,15 @@ public abstract class User implements Serializable {
     protected final int userId;
     protected String name;
     protected String email;
+    protected String password;
     protected String phone;
     protected final List<BookCopy> borrowedBooks;
 
-    public User(int userId, String name, String email, String phone) {
+    public User(int userId, String name, String email, String password, String phone) {
         this.userId = userId;
         this.name = name;
         this.email = email;
+        this.password = password;
         this.phone = phone;
         this.borrowedBooks = Collections.synchronizedList(new ArrayList<>());
     }
@@ -38,6 +40,7 @@ public abstract class User implements Serializable {
         return email;
     }
 
+    public abstract String getPassword();
     public void setEmail(String email) {
         this.email = email;
     }

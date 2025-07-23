@@ -12,7 +12,7 @@ public class StudentTest {
 
     @BeforeEach
     void setUp() {
-        student = new Student(1, "Test Student", "test@student.com", "1234567890");
+        student = new Student(1, "Test Student", "test@student.com","pass@123", "1234567890");
         book = new Book("Java", "Author", "Tech", 300);
         // add 3 copies to simulate real scenario
         for (int i = 1; i <= 3; i++) {

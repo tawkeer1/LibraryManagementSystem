@@ -6,13 +6,17 @@ public class Student extends User implements Serializable {
     private static final long serialVersionUID = 1L;
     private final int borrowLimit = 3;
 
-    public Student(int userId, String name, String email, String phone) {
-        super(userId, name, email, phone);
+    public Student(int userId, String name, String email, String password, String phone) {
+        super(userId, name, email, password, phone);
     }
 
     @Override
     public String getRole() {
         return "Student";
+    }
+    @Override
+    public String getPassword(){
+        return password;
     }
     @Override
     public void borrowBook(BookCopy copy) {

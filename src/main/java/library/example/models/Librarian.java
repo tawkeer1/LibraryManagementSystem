@@ -6,8 +6,8 @@ import java.io.Serializable;
 
 public class Librarian extends User implements Serializable {
     private static final long serialVersionUID = 1L;
-    public Librarian(int userId, String name, String email, String phone) {
-        super(userId, name, email, phone);
+    public Librarian(int userId, String name, String email, String password, String phone) {
+        super(userId, name, email, password, phone);
     }
 
     @Override
@@ -15,8 +15,18 @@ public class Librarian extends User implements Serializable {
         return "Librarian";
     }
     public void addNewBook(LibraryService library, Book book) {
-        library.addBook(book);
-        System.out.println("Librarian added new book: " + book.getTitle());
+        try{
+            library.addBook(book);
+            System.out.println("Librarian added new book: " + book.getTitle());
+        }catch(IllegalArgumentException e){
+            System.out.println("Note: " + e.getMessage());
+        }
+
+    }
+
+    @Override
+    public String getPassword(){
+        return password;
     }
 
     public void addBookCopyToBook(LibraryService library, int bookIndex, BookCopy copy) {
