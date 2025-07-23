@@ -57,7 +57,7 @@ public abstract class User implements Serializable {
         return borrowedBooks;
     }
 
-    public void borrowBook(BookCopy copy) {
+    public void borrowBook (BookCopy copy) {
         if (copy == null) {
             System.out.println("Invalid book copy provided.");
             return;

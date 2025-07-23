@@ -1,6 +1,7 @@
 package library.example;
 
 import library.example.admin.AdminReportGenerator;
+import library.example.exceptions.BookNotFoundException;
 import library.example.exceptions.InvalidInputException;
 import library.example.models.*;
 import library.example.services.LibraryService;
@@ -162,7 +163,7 @@ public class Main {
 
             try {
                 int number = Integer.parseInt(input);
-                if (number <= 0) {
+                if (number < 0) {
                     throw new InvalidInputException("Number must be positive.");
                 }
                 return number;
@@ -406,33 +407,38 @@ public class Main {
 
                 case 2 -> {
                     String title = promptNonEmpty(sc, "Enter title of the book to add a copy to: ");
-                    List<Book> matchedBooks = library.searchBooksByTitle(title);
+                    try {
+                        List<Book> matchedBooks = library.searchBooksByTitle(title); // may throw BookNotFoundException
 
-                    if (matchedBooks.isEmpty()) {
-                        System.out.println("No book found with title: " + title);
-                    } else if (matchedBooks.size() == 1) {
-                        Book book = matchedBooks.get(0);
-                        int copyId = promptPositiveInt(sc, "Enter new copy ID: ");
-                        BookCopy copy = new BookCopy(copyId, book.getTitle(), book.getAuthorName(), book.getGenre(), book.getPages(), false);
-                        int index = library.getAllBooks().indexOf(book);
-                        librarian.addBookCopyToBook(library, index, copy);
-                    } else {
-                        System.out.println("Multiple books found with that title:");
-                        for (int i = 0; i < matchedBooks.size(); i++) {
-                            System.out.println((i + 1) + ". " + matchedBooks.get(i).getTitle() + " by " + matchedBooks.get(i).getAuthorName());
-                        }
-                        int bookChoice = promptPositiveInt(sc, "Enter choice: ") - 1;
-                        if (bookChoice >= 0 && bookChoice < matchedBooks.size()) {
-                            Book book = matchedBooks.get(bookChoice);
+                        if (matchedBooks.isEmpty()) {
+                            System.out.println("No book found with title: " + title);
+                        } else if (matchedBooks.size() == 1) {
+                            Book book = matchedBooks.get(0);
                             int copyId = promptPositiveInt(sc, "Enter new copy ID: ");
                             BookCopy copy = new BookCopy(copyId, book.getTitle(), book.getAuthorName(), book.getGenre(), book.getPages(), false);
                             int index = library.getAllBooks().indexOf(book);
                             librarian.addBookCopyToBook(library, index, copy);
                         } else {
-                            System.out.println("Invalid selection.");
+                            System.out.println("Multiple books found with that title:");
+                            for (int i = 0; i < matchedBooks.size(); i++) {
+                                System.out.println((i + 1) + ". " + matchedBooks.get(i).getTitle() + " by " + matchedBooks.get(i).getAuthorName());
+                            }
+                            int bookChoice = promptPositiveInt(sc, "Enter choice: ") - 1;
+                            if (bookChoice >= 0 && bookChoice < matchedBooks.size()) {
+                                Book book = matchedBooks.get(bookChoice);
+                                int copyId = promptPositiveInt(sc, "Enter new copy ID: ");
+                                BookCopy copy = new BookCopy(copyId, book.getTitle(), book.getAuthorName(), book.getGenre(), book.getPages(), false);
+                                int index = library.getAllBooks().indexOf(book);
+                                librarian.addBookCopyToBook(library, index, copy);
+                            } else {
+                                System.out.println("Invalid selection.");
+                            }
                         }
+                    } catch (BookNotFoundException e) {
+                        System.out.println("Error: " + e.getMessage());
                     }
                 }
+
 
 
                 case 3 -> {
@@ -470,11 +476,11 @@ public class Main {
 
                 case 9 -> {
                     String title = promptNonEmpty(sc, "Enter title to search: ");
-                    List<Book> results = library.searchBooksByTitle(title);
-                    if (results.isEmpty()) {
-                        System.out.println("No books found with title: " + title);
-                    } else {
+                    try{
+                        List<Book> results = library.searchBooksByTitle(title);
                         results.forEach(System.out::println);
+                    }catch(BookNotFoundException e){
+                        System.out.println(e.getMessage());
                     }
                 }
 
@@ -501,15 +507,20 @@ public class Main {
                 case 14 -> library.reloadBooksFromDisk();
 
                 case 15 -> {
-                    String title = promptNonEmpty(sc, "Enter title of book to remove: ");
-                    List<Book> books = library.searchBooksByTitle(title);
-                    if (!books.isEmpty()) {
-                        Book bookToRemove = books.get(0);
-                        library.getAllBooks().remove(bookToRemove);
-                        System.out.println("Book removed.");
-                    } else {
-                        System.out.println("Book not found.");
+                    try{
+                        String title = promptNonEmpty(sc, "Enter title of book to remove: ");
+                        List<Book> books = library.searchBooksByTitle(title);
+                        if (!books.isEmpty()) {
+                            Book bookToRemove = books.get(0);
+                            library.getAllBooks().remove(bookToRemove);
+                            System.out.println("Book removed.");
+                        } else {
+                            System.out.println("Book not found.");
+                        }
+                    }catch (BookNotFoundException e){
+                        System.out.println(e.getMessage());
                     }
+
                 }
 
 
@@ -648,13 +659,18 @@ public class Main {
                 case 5 -> library.printAllBooks();
                 case 6 -> library.getAllAvailableEBooks().forEach(System.out::println);
                 case 7 -> {
-                    String title = promptNonEmpty(sc, "Enter title to search: ");
-                    List<Book> results = library.searchBooksByTitle(title);
-                    if (results.isEmpty()) {
-                        System.out.println("No books found with title: " + title);
-                    } else {
-                        results.forEach(System.out::println);
+                    try{
+                        String title = promptNonEmpty(sc, "Enter title to search: ");
+                        List<Book> results = library.searchBooksByTitle(title);
+                        if (results.isEmpty()) {
+                            System.out.println("No books found with title: " + title);
+                        } else {
+                            results.forEach(System.out::println);
+                        }
+                    }catch (BookNotFoundException e){
+                        System.out.println(e.getMessage());
                     }
+
                 }
                 case 8 -> {
                     String author = promptNonEmpty(sc, "Enter author to search: ");

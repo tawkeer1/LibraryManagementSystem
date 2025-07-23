@@ -1,5 +1,6 @@
 package library.example.services;
 
+import library.example.exceptions.BookNotFoundException;
 import library.example.models.*;
 import library.example.utils.GenericAssetManager;
 
@@ -158,10 +159,10 @@ public class LibraryService {
     }
 
 
-    public List<Book> searchBooksByTitle(String title) {
+    public List<Book> searchBooksByTitle(String title) throws BookNotFoundException {
         List<Book> books = bookManager.getAll();
         if(books.isEmpty()){
-            System.out.println("No available book");
+            throw new BookNotFoundException("No Book available currently");
         }
 
         return books.stream()
@@ -231,7 +232,7 @@ public class LibraryService {
     }
 
     public List<EBook> getAllEBooks() {
-        return ebookManager.getAll(); // no validation needed here
+        return ebookManager.getAll();
     }
 
 
@@ -247,9 +248,14 @@ public class LibraryService {
     }
 
     public Optional<EBook> getEBookByTitle(String title) {
-        return ebookManager.getAll().stream()
+
+        Optional<EBook> ebookFound = ebookManager.getAll().stream()
                 .filter(ebook -> ebook.getTitle().equalsIgnoreCase(title))
                 .findFirst();
+        if(ebookFound.isEmpty()){
+            System.out.println("Ebook not found");
+        }
+        return ebookFound;
     }
 
     public List<EBook> getAllAvailableEBooks() {
