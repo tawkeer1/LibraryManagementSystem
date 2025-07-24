@@ -110,8 +110,10 @@ public class Main {
             input = sc.nextLine().trim();
             if (input.isEmpty()) {
                 System.out.println("Input cannot be empty. Please try again.");
+            } else if(input.length() < 3){
+                System.out.println("Input should be at least 3 characters");
             }
-        } while (input.isEmpty());
+        } while (input.isEmpty() || input.length() < 3);
         return input;
     }
 
@@ -380,6 +382,7 @@ public class Main {
             System.out.println("15. Remove Book by Title");
             System.out.println("16. Borrow a Book");
             System.out.println("17. Return a Book");
+            System.out.println("18. Print All Copies");
             System.out.println("0. Logout");
 
             int choice = -1;
@@ -414,7 +417,7 @@ public class Main {
                             System.out.println("No book found with title: " + title);
                         } else if (matchedBooks.size() == 1) {
                             Book book = matchedBooks.get(0);
-                            int copyId = promptPositiveInt(sc, "Enter new copy ID: ");
+                            String copyId = UUID.randomUUID().toString();
                             BookCopy copy = new BookCopy(copyId, book.getTitle(), book.getAuthorName(), book.getGenre(), book.getPages(), false);
                             int index = library.getAllBooks().indexOf(book);
                             librarian.addBookCopyToBook(library, index, copy);
@@ -426,7 +429,7 @@ public class Main {
                             int bookChoice = promptPositiveInt(sc, "Enter choice: ") - 1;
                             if (bookChoice >= 0 && bookChoice < matchedBooks.size()) {
                                 Book book = matchedBooks.get(bookChoice);
-                                int copyId = promptPositiveInt(sc, "Enter new copy ID: ");
+                                String copyId = UUID.randomUUID().toString();
                                 BookCopy copy = new BookCopy(copyId, book.getTitle(), book.getAuthorName(), book.getGenre(), book.getPages(), false);
                                 int index = library.getAllBooks().indexOf(book);
                                 librarian.addBookCopyToBook(library, index, copy);
@@ -564,8 +567,7 @@ public class Main {
                         System.out.println("Returned: " + toReturn.getTitle() + " (ID: " + toReturn.getCopyId() + ")");
                     }
                 }
-
-
+                case 18 -> library.getAllAvailableCopies();
                 case 0 -> {
                     System.out.println("Logged out.");
                     return;
@@ -603,21 +605,28 @@ public class Main {
                         System.out.println("No available copies for this title.");
                     } else {
                         System.out.println("Available copies:");
-                        for (BookCopy copy : availableCopies) {
-                            System.out.printf("ID: %d | Title: %s%n", copy.getCopyId(), copy.getTitle());
+                        for (int i = 0; i < availableCopies.size(); i++) {
+                            BookCopy copy = availableCopies.get(i);
+                            System.out.printf("%d. ID: %s | Title: %s%n", i + 1, copy.getCopyId(), copy.getTitle());
                         }
 
-                        int copyId = promptPositiveInt(sc, "Enter copy ID to borrow: ");
-                        BookCopy selected = library.getCopyById(copyId);
-
-                        if (selected != null && !selected.isTaken() && selected.getTitle().equalsIgnoreCase(title)) {
-                            student.borrowBook(selected);
-                            System.out.println("Borrowed copy ID: " + selected.getCopyId());
-                        } else {
-                            System.out.println("Invalid or unavailable copy ID.");
+                        int serialNo;
+                        while (true) {
+                            serialNo = promptPositiveInt(sc, "Enter the serial number of the copy to borrow: ");
+                            if (serialNo >= 1 && serialNo <= availableCopies.size()) {
+                                break;
+                            } else {
+                                System.out.println("Invalid serial number. Please choose between 1 and " + availableCopies.size());
+                            }
                         }
+
+                        BookCopy selected = availableCopies.get(serialNo - 1);
+                        student.borrowBook(selected);
+                        System.out.println("Borrowed copy ID: " + selected.getCopyId());
                     }
                 }
+
+
 
                 case 2 -> {
                     List<BookCopy> borrowed = student.getBorrowedBooks();
@@ -626,24 +635,19 @@ public class Main {
                         System.out.println("You haven't borrowed any books.");
                     } else {
                         System.out.println("Your borrowed books:");
-                        for (BookCopy copy : borrowed) {
-                            System.out.printf("ID: %d | Title: %s%n", copy.getCopyId(), copy.getTitle());
+                        for (int i = 0; i < borrowed.size(); i++) {
+                            BookCopy copy = borrowed.get(i);
+                            System.out.printf("%d. ID: %s | Title: %s%n", i + 1, copy.getCopyId(), copy.getTitle());
                         }
 
-                        int copyId = promptPositiveInt(sc, "Enter copy ID to return: ");
-                        BookCopy toReturn = borrowed.stream()
-                                .filter(c -> c.getCopyId() == copyId)
-                                .findFirst()
-                                .orElse(null);
+                        int c = promptIntInRange(sc, "Select copy to return (number): ", 1, borrowed.size());
+                        BookCopy toReturn = borrowed.get(c - 1);
 
-                        if (toReturn != null) {
-                            student.returnBook(toReturn);
-                            System.out.println("Returned: " + toReturn.getTitle() + " (ID: " + toReturn.getCopyId() + ")");
-                        } else {
-                            System.out.println("Invalid copy ID. You didn't borrow this copy.");
-                        }
+                        student.returnBook(toReturn);
+                        System.out.println("Returned: " + toReturn.getTitle() + " (ID: " + toReturn.getCopyId() + ")");
                     }
                 }
+
 
                 case 3 -> {
                     library.printAllEBooks();

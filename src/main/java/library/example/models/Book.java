@@ -1,4 +1,6 @@
 package library.example.models;
+import library.example.services.BackupService;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +48,29 @@ public class Book implements Serializable {
         return count;
     }
     //return list of all available copies of book
-    public List<BookCopy> getCopies(){
+    public List<BookCopy> getCopies() {
         return copies;
     }
+
+    public List<BookCopy> getMergedCopies() {
+        // Create a fresh list with all in-memory copies first
+        List<BookCopy> merged = new ArrayList<>(this.copies);
+
+        // Load from disk
+        List<BookCopy> fromDisk = BackupService.loadBookCopiesByTitle(this.title);
+
+        // Avoid duplicates: add only copies not already present
+        for (BookCopy copy : fromDisk) {
+            boolean alreadyExists = merged.stream()
+                    .anyMatch(c -> c.getCopyId().equals(copy.getCopyId()));
+            if (!alreadyExists) {
+                merged.add(copy);
+            }
+        }
+
+        return merged;
+    }
+
 
 //    public int totalCopies() {
 //        return copies.size();
@@ -83,15 +105,19 @@ public class Book implements Serializable {
     public String getGenre(){
         return genre;
     }
+
     @Override
     public String toString() {
+        List<BookCopy> merged = getMergedCopies();
+        long availableCount = merged.stream().filter(copy -> !copy.isTaken()).count();
+
         return "\n------------------------" +
                 "\nTitle       : " + title +
                 "\nAuthor      : " + authorName +
                 "\nGenre       : " + genre +
                 "\nPages       : " + pages +
-                "\nTotal Copies: " + copies.size() +
-                "\nAvailable   : " + availableCopies() +
+                "\nTotal Copies: " + merged.size() +
+                "\nAvailable   : " + availableCount +
                 "\n------------------------";
     }
 

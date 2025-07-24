@@ -4,16 +4,15 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class BookCopy implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private final int copyId;
+public class BookCopy {
+    private final String copyId;
     private String title;
     private String authorName;
     private String genre;
     private int pages;
     private boolean taken;
 
-    public BookCopy(int copyId, String bookName, String authorName, String genre, int pages, boolean taken) {
+    public BookCopy(String copyId, String bookName, String authorName, String genre, int pages, boolean taken) {
         this.copyId = copyId;
         this.title = bookName;
         this.authorName = authorName;
@@ -22,7 +21,7 @@ public class BookCopy implements Serializable {
         this.taken = taken;
     }
 
-    public int getCopyId() {
+    public String getCopyId() {
         return copyId;
     }
 

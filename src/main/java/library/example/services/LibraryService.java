@@ -12,7 +12,7 @@ public class LibraryService {
     private final List<User> users;
     private final GenericAssetManager<Book> bookManager;
     private final GenericAssetManager<EBook> ebookManager;
-    private final Map<Integer, BookCopy> copyIdMap;
+    private final Map<String, BookCopy> copyIdMap;
 
     public LibraryService() {
         // Load users from backup or start fresh
@@ -135,28 +135,44 @@ public class LibraryService {
 
     public List<BookCopy> getAllAvailableCopies() {
         List<Book> books = bookManager.getAll();
-        if(books.isEmpty()){
-            System.out.println("No available book");
-        }
-        return books.stream()
+        List<BookCopy> bookCopiesFromDisk = BackupService.loadBookCopies();
+
+
+        List<BookCopy> availableDiskCopies = bookCopiesFromDisk.stream()
+                .filter(copy -> !copy.isTaken())
+                .collect(Collectors.toList());
+
+        List<BookCopy> availableInMemoryCopies = books.stream()
                 .flatMap(book -> book.getCopies().stream())
                 .filter(copy -> !copy.isTaken())
                 .collect(Collectors.toList());
+
+        // Combine both
+        List<BookCopy> allAvailableCopies = new ArrayList<>();
+        allAvailableCopies.addAll(availableDiskCopies);
+        allAvailableCopies.addAll(availableInMemoryCopies);
+        allAvailableCopies.forEach(System.out::println);
+        return allAvailableCopies;
     }
 
+
+    //get all copies we have with the title
     public List<BookCopy> getAllAvailableCopiesByTitle(String title) {
         List<Book> books = bookManager.getAll();
-        if(books.isEmpty()){
-            System.out.println("No available book");
-        }
-        List<BookCopy> bookCopies =  books.stream()
-                .flatMap(book -> book.getCopies().stream())
+
+        List<BookCopy> availableCopies = books.stream()
+                .filter(book -> book.getTitle().equalsIgnoreCase(title))
+                .flatMap(book -> book.getMergedCopies().stream())
                 .filter(copy -> !copy.isTaken())
                 .collect(Collectors.toList());
-        return bookCopies.stream()
-                .filter(copy -> copy.getTitle().equalsIgnoreCase(title) && !copy.isTaken())
-                .collect(Collectors.toList());
+
+        if (availableCopies.isEmpty()) {
+            System.out.println("No available copies for title: " + title);
+        }
+
+        return availableCopies;
     }
+
 
 
     public List<Book> searchBooksByTitle(String title) throws BookNotFoundException {
@@ -181,7 +197,7 @@ public class LibraryService {
                 .collect(Collectors.toList());
     }
 
-    public BookCopy getCopyById(int copyId) {
+    public BookCopy getCopyById(String copyId) {
         if(copyIdMap.containsKey(copyId)) {
             return copyIdMap.get(copyId);
         }
@@ -193,15 +209,18 @@ public class LibraryService {
 
     public void printAllBooks() {
         List<Book> books = bookManager.getAll();
-        if(books.isEmpty()){
+        if (books.isEmpty()) {
             System.out.println("No Book available");
+            return;
         }
+
         books.forEach(book -> {
-            System.out.println(book + " (" +
-                    book.getCopies().stream().filter(copy -> !copy.isTaken()).count() +
-                    "/" + book.getCopies().size() + " available)");
+            List<BookCopy> mergedCopies = book.getMergedCopies();
+            long available = mergedCopies.stream().filter(copy -> !copy.isTaken()).count();
+            System.out.println(book + " (" + available + "/" + mergedCopies.size() + " available)");
         });
     }
+
 
     public void addEBook(EBook ebook) {
         if (ebook == null) {
@@ -280,6 +299,7 @@ public class LibraryService {
     public void backupToDisk() {
         BackupService.saveBooks(getAllBooks());
         BackupService.saveUsers(getAllUsers());
+        BackupService.saveBookCopies(getAllAvailableCopies());
         System.out.println("[Backup] Data saved successfully.");
     }
 

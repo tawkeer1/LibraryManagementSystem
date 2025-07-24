@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 public class BackupService {
     private static final String BOOKS_CSV = "backup_books.csv";
     private static final String USERS_CSV = "backup_users.csv";
+    private static final String BOOK_COPIES_CSV = "backup_bookcopies.csv";
+
 
     // ---------------- BOOK BACKUP ----------------
 
@@ -81,6 +83,90 @@ public class BackupService {
 
         return books;
     }
+
+    public static void saveBookCopies(List<BookCopy> copies) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(BOOK_COPIES_CSV))) {
+            for (BookCopy copy : copies) {
+                writer.println(
+                        escape(copy.getCopyId()) + "," +
+                                escape(copy.getTitle()) + "," +
+                                escape(copy.getAuthorName()) + "," +
+                                escape(copy.getGenre()) + "," +
+                                copy.getPages() + "," +
+                                copy.isTaken()
+                );
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to save book copies: " + e.getMessage());
+        }
+    }
+
+    public static List<BookCopy> loadBookCopies() {
+        List<BookCopy> copies = new ArrayList<>();
+        File file = new File(BOOK_COPIES_CSV);
+        if (!file.exists()) return copies;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = parseCSVLine(line);
+                if (parts.length >= 6) {
+                    try {
+                        String copyId = parts[0].trim();
+                        String title = parts[1].replace("\\,", ",").trim();
+                        String author = parts[2].replace("\\,", ",").trim();
+                        String genre = parts[3].replace("\\,", ",").trim();
+                        int pages = Integer.parseInt(parts[4].trim());
+                        boolean taken = Boolean.parseBoolean(parts[5].trim());
+
+                        BookCopy copy = new BookCopy(copyId, title, author, genre, pages, taken);
+                        copies.add(copy);
+                    } catch (Exception e) {
+                        System.err.println("Invalid book copy entry: " + line);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load book copies: " + e.getMessage());
+        }
+
+        return copies;
+    }
+
+    public static List<BookCopy> loadBookCopiesByTitle(String targetTitle) {
+        List<BookCopy> copies = new ArrayList<>();
+        File file = new File(BOOK_COPIES_CSV);
+        if (!file.exists()) return copies;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = parseCSVLine(line);
+                if (parts.length >= 6) {
+                    try {
+                        String copyId = parts[0].trim();
+                        String title = parts[1].replace("\\,", ",").trim();
+                        String author = parts[2].replace("\\,", ",").trim();
+                        String genre = parts[3].replace("\\,", ",").trim();
+                        int pages = Integer.parseInt(parts[4].trim());
+                        boolean taken = Boolean.parseBoolean(parts[5].trim());
+
+                        if (title.equalsIgnoreCase(targetTitle)) {
+                            BookCopy copy = new BookCopy(copyId, title, author, genre, pages, taken);
+                            copies.add(copy);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Invalid book copy entry: " + line);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load book copies: " + e.getMessage());
+        }
+
+        return copies;
+    }
+
 
 
     // ---------------- USER BACKUP ----------------
