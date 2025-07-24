@@ -6,6 +6,7 @@ import library.example.exceptions.InvalidInputException;
 import library.example.models.*;
 import library.example.services.LibraryService;
 
+import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -258,12 +259,27 @@ public class Main {
             switch (role) {
                 case "L" -> {
                     String email = promptValidEmail(sc, "Enter librarian email: ");
-                    Optional<User> userOpt = library.findUserByEmail(email);
+                    Optional<User> userByEmail = library.findUserByEmail(email);
+                    String phone = promptPhone(sc, "Enter phone: ");
+                    Optional<User> userByPhone = library.findUserByPhone(phone);
 
                     Librarian librarian;
-                    if (userOpt.isPresent() && userOpt.get() instanceof Librarian) {
-                        librarian = (Librarian) userOpt.get();
 
+                    if (userByEmail.isPresent()) {
+                        User user = userByEmail.get();
+                        if (!(user instanceof Librarian)) {
+                            System.out.println("Email is already registered with a student.");
+                            break;
+                        }
+
+                        librarian = (Librarian) user;
+
+                        if (!librarian.getPhone().equals(phone)) {
+                            System.out.println("Phone number does not match the registered email.");
+                            break;
+                        }
+
+                        // Authentication
                         while (true) {
                             String enteredPassword = promptPassword(sc, "Enter your password: ");
                             if (librarian.getPassword().equals(enteredPassword)) {
@@ -271,27 +287,45 @@ public class Main {
                             }
                             System.out.println("Incorrect password. Please try again.");
                         }
+
+                    } else if (userByPhone.isPresent()) {
+                        System.out.println("Phone number already registered with a different email.");
+                        break;
                     } else {
+                        // New librarian registration
                         String name = promptName(sc, "Enter librarian name: ");
-                        String phone = promptPhone(sc, "Enter phone: ");
                         String password = promptPassword(sc, "Create password: ");
                         librarian = new Librarian(generateId(), name, email, password, phone);
                         library.addUser(librarian);
+                        System.out.println("Librarian registered successfully.");
                     }
 
                     showLibrarianMenu(librarian, library, sc);
                 }
 
-
-
                 case "S" -> {
                     String email = promptValidEmail(sc, "Enter student email: ");
-                    Optional<User> userOpt = library.findUserByEmail(email);
+                    Optional<User> userByEmail = library.findUserByEmail(email);
+                    String phone = promptPhone(sc, "Enter phone: ");
+                    Optional<User> userByPhone = library.findUserByPhone(phone);
 
                     Student student;
-                    if (userOpt.isPresent() && userOpt.get() instanceof Student) {
-                        student = (Student) userOpt.get();
 
+                    if (userByEmail.isPresent()) {
+                        User user = userByEmail.get();
+                        if (!(user instanceof Student)) {
+                            System.out.println("Email is already registered with a librarian.");
+                            break;
+                        }
+
+                        student = (Student) user;
+
+                        if (!student.getPhone().equals(phone)) {
+                            System.out.println("Phone number does not match the registered email.");
+                            break;
+                        }
+
+                        // Authentication
                         while (true) {
                             String enteredPassword = promptPassword(sc, "Enter your password: ");
                             if (student.getPassword().equals(enteredPassword)) {
@@ -299,48 +333,69 @@ public class Main {
                             }
                             System.out.println("Incorrect password. Please try again.");
                         }
+
+                    } else if (userByPhone.isPresent()) {
+                        System.out.println("Phone number already registered with a different email.");
+                        break;
                     } else {
+                        // New student registration
                         String name = promptName(sc, "Enter student name: ");
-                        String phone = promptPhone(sc, "Enter phone: ");
                         String password = promptPassword(sc, "Create password: ");
                         student = new Student(generateId(), name, email, password, phone);
                         library.addUser(student);
+                        System.out.println("Student registered successfully.");
                     }
 
                     showStudentMenu(student, library, sc);
                 }
 
-
-
-                case "U" -> {
-                    System.out.println("All Users:");
-                    library.getAllUsers().forEach(user ->
-                            System.out.println(user.getRole() + ": " + user.getName() + " (" + user.getEmail() + ")"));
-                }
-
                 case "A" -> {
-                    String type = promptNonEmpty(sc, "Add (L/l) for librarian or (S/s) for student ");
+                    String type = promptNonEmpty(sc, "Add (L/l) for librarian or (S/s) for student: ").toLowerCase();
                     String name = promptName(sc, "Enter name: ");
                     String email = promptValidEmail(sc, "Enter email: ");
                     String phone = promptPhone(sc, "Enter phone: ");
-                    String password = promptPassword(sc,"Enter password: ");
+                    String password = promptPassword(sc, "Enter password: ");
 
                     if (library.findUserByEmail(email).isPresent()) {
                         System.out.println("User already exists with this email.");
                         break;
+                    } else if (library.findUserByPhone(phone).isPresent()) {
+                        System.out.println("User with this phone number already exists.");
+                        break;
                     }
 
                     int id = generateId();
-                    if (type.equals("L") || type.equals("l")) {
+                    if (type.equals("l")) {
                         Librarian librarian = new Librarian(id, name, email, password, phone);
                         library.addUser(librarian);
-                    } else if (type.equals("S") || type.equals("s")) {
+                        System.out.println("Librarian added successfully.");
+                    } else if (type.equals("s")) {
                         Student student = new Student(id, name, email, password, phone);
                         library.addUser(student);
+                        System.out.println("Student added successfully.");
                     } else {
-                        System.out.println("Invalid user type.");
+                        System.out.println("Invalid user type. Please choose L or S.");
                     }
                 }
+
+                case "U" -> {
+                    System.out.println("\nAll Users:");
+                    if (library.getAllUsers().isEmpty()) {
+                        System.out.println("No users found.");
+                    } else {
+                        library.getAllUsers().forEach(user -> {
+                            System.out.printf(
+                                    "%s | ID: %d | Name: %s | Email: %s | Phone: %s%n",
+                                    user.getRole(),
+                                    user.getUserId(),
+                                    user.getName(),
+                                    user.getEmail(),
+                                    user.getPhone()
+                            );
+                        });
+                    }
+                }
+
 
                 case "D" -> {
                     String email = promptValidEmail(sc, "Enter email of user: ");

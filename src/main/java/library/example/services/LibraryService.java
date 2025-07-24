@@ -104,6 +104,13 @@ public class LibraryService {
                     .findFirst();
         }
     }
+    public Optional<User> findUserByPhone(String phone) {
+        synchronized (users) {
+            return users.stream()
+                    .filter(user -> user.getPhone().equalsIgnoreCase(phone))
+                    .findFirst();
+        }
+    }
 
     public boolean deleteUserByEmail(String email) {
         synchronized (users) {
